@@ -29,8 +29,9 @@
   - `matvec` — на `MPI_Bcast`/`MPI_Scatterv`/`MPI_Gatherv`
 - [`03_ring`](examples/03_ring/README.md) — кольцевой сдвиг на `MPI_Isend`/`MPI_Irecv`
 - [`common/`](examples/common/) — общий код (`MpiEnvironment`, парсер, `block_for`)
+- [`04_persistent`](examples/04_persistent/README.md) — кольцевой сдвиг на `Send_init`/`Startall`
 
-Планируется: `04_cg` (сопряжённые градиенты), `05_tridiag` (прогонка).
+Планируется: `05_tridiag` (прогонка), `06_topo` (топологии), `07_split` (коммуникаторы).
 
 ## Сборка
 
