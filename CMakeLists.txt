@@ -15,5 +15,7 @@ find_package(MPI REQUIRED COMPONENTS CXX)
 
 add_compile_options(-Wall -Wextra -Wpedantic)
 
+add_subdirectory(examples/common)
 add_subdirectory(examples/01_hello)
 add_subdirectory(examples/02_matvec)
+add_subdirectory(examples/03_ring)

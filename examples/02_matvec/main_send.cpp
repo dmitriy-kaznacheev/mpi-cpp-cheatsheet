@@ -27,13 +27,13 @@ void par_matvec(int N, int rank, int size, const std::vector<double> &A,
   if (rank == 0) {
     for (int dest = 1; dest < size; ++dest) {
       auto [d_off, d_rows] = block_for(dest, N, size);
-      MPI_Send(&A[d_off * N], d_rows * N, MPI_DOUBLE, dest,
-               TAG_A, MPI_COMM_WORLD);
+      MPI_Send(&A[d_off * N], d_rows * N, MPI_DOUBLE, dest, TAG_A,
+               MPI_COMM_WORLD);
     }
     std::copy(&A[offset * N], &A[(offset + local_rows) * N], local_A.begin());
   } else {
-    MPI_Recv(local_A.data(), local_rows * N, MPI_DOUBLE, 0,
-             TAG_A, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+    MPI_Recv(local_A.data(), local_rows * N, MPI_DOUBLE, 0, TAG_A,
+             MPI_COMM_WORLD, MPI_STATUS_IGNORE);
   }
 
   // вычисление
@@ -50,12 +50,11 @@ void par_matvec(int N, int rank, int size, const std::vector<double> &A,
     std::copy(local_y.begin(), local_y.end(), y_out.begin() + offset);
     for (int src = 1; src < size; ++src) {
       auto [s_off, s_rows] = block_for(src, N, size);
-      MPI_Recv(&y_out[s_off], s_rows, MPI_DOUBLE, src, TAG_Y,
-               MPI_COMM_WORLD, MPI_STATUS_IGNORE);
+      MPI_Recv(&y_out[s_off], s_rows, MPI_DOUBLE, src, TAG_Y, MPI_COMM_WORLD,
+               MPI_STATUS_IGNORE);
     }
   } else {
-    MPI_Send(local_y.data(), local_rows, MPI_DOUBLE, 0, TAG_Y,
-             MPI_COMM_WORLD);
+    MPI_Send(local_y.data(), local_rows, MPI_DOUBLE, 0, TAG_Y, MPI_COMM_WORLD);
   }
 }
 
