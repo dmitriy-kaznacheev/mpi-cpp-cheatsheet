@@ -23,10 +23,14 @@
 
 ## Примеры
 
-- `01_hello` — минимальная программа
-- `02_matvec` — умножение матрицы на вектор
-- `03_cg` — метод сопряжённых градиентов
-- `04_tridiag` — метод прогонки
+- `01_hello` — минимальная MPI-программа
+- `02_matvec` — умножение матрицы на вектор:
+  - `matvec_send` — на `MPI_Send`/`MPI_Recv` (point-to-point)
+  - `matvec` — на `MPI_Bcast`/`MPI_Scatterv`/`MPI_Gatherv` (коллективные)
+- `03_ring` — кольцевой сдвиг на `MPI_Isend`/`MPI_Irecv`
+- `examples/common/` — общий код (`MpiEnvironment`, парсер аргументов, `block_for`)
+
+Планируется: `04_cg` (сопряжённые градиенты), `05_tridiag` (прогонка).
 
 ## Сборка
 
