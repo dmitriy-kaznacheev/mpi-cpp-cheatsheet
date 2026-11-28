@@ -40,27 +40,56 @@ public:
 };
 
 struct CliArgs {
-  int count = 400;
+  int count = 400; // размер задачи (N) — для 02_matvec
+  int iters = 5;   // число итераций — для 04_persistent
   bool verify = false;
 };
 
+// Разбор одного целого. nullopt при ошибке.
+inline std::optional<int> parse_int(std::string_view arg, int rank,
+                                    const char *what) {
+  int value = 0;
+  auto [ptr, ec] = std::from_chars(arg.data(), arg.data() + arg.size(), value);
+  if (ec != std::errc{} || ptr != arg.data() + arg.size()) {
+    if (rank == 0) {
+      std::cerr << "Некорректный " << what << ": " << arg << "\n";
+    }
+    return std::nullopt;
+  }
+  return value;
+}
+
+// Общий парсер: --verify, --iters N, позиционное число -> count.
 inline std::optional<CliArgs> par_parse_args(int argc, char **argv, int rank) {
   CliArgs args;
   for (int i = 1; i < argc; ++i) {
-    if (std::string_view(argv[i]) == "--verify"sv) {
+    std::string_view arg{argv[i]};
+    if (arg == "--verify"sv) {
       args.verify = true;
-    } else {
-      std::string_view arg{argv[i]};
-      int value = 0;
-      auto [ptr, ec] =
-          std::from_chars(arg.data(), arg.data() + arg.size(), value);
-      if (ec != std::errc{} || ptr != arg.data() + arg.size()) {
+    } else if (arg == "--iters"sv) {
+      if (i + 1 >= argc) {
         if (rank == 0) {
-          std::cerr << "Некорректный аргумент: " << arg << "\n";
+          std::cerr << "--iters требует значение\n";
         }
         return std::nullopt;
       }
-      args.count = value;
+      auto v = parse_int(argv[++i], rank, "iters");
+      if (!v) {
+        return std::nullopt;
+      }
+      args.iters = *v;
+      if (args.iters < 1) {
+        if (rank == 0) {
+          std::cerr << "iters должен быть >= 1\n";
+        }
+        return std::nullopt;
+      }
+    } else {
+      auto v = parse_int(arg, rank, "аргумент");
+      if (!v) {
+        return std::nullopt;
+      }
+      args.count = *v;
     }
   }
   if (args.count <= 0) {

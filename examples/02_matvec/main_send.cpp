@@ -71,7 +71,8 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    auto [N, verify] = *args;
+    auto [N, iters, verify] = *args;
+    (void)iters; // 02_matvec не использует iters
 
     if (!check_size_limit(N, rank)) {
       return EXIT_FAILURE;

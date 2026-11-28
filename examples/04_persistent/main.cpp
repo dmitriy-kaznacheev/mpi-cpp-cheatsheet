@@ -4,7 +4,7 @@ using namespace mpi_cheatsheet;
 
 // Кольцевой сдвиг на persistent-запросах: Send_init/Recv_init один раз,
 // Startall/Waitall в цикле.
-void ring_persistent(int rank, int size, int n_iters, int &last_recv) {
+void ring_persistent(int rank, int size, int iters, int &last_recv) {
   int right = (rank + 1) % size;
   int left = (rank - 1 + size) % size;
 
@@ -16,7 +16,7 @@ void ring_persistent(int rank, int size, int n_iters, int &last_recv) {
   MPI_Send_init(&send_val, 1, MPI_INT, right, 0, MPI_COMM_WORLD, &reqs[0]);
   MPI_Recv_init(&recv_val, 1, MPI_INT, left, 0, MPI_COMM_WORLD, &reqs[1]);
 
-  for (int iter = 0; iter < n_iters; ++iter) {
+  for (int iter = 0; iter < iters; ++iter) {
     send_val = rank * 1000 + iter; // новое значение каждый раз
     MPI_Startall(2, reqs);
     MPI_Waitall(2, reqs, MPI_STATUSES_IGNORE);
@@ -35,42 +35,29 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-    // Разбор: первый числовой аргумент — n_iters, --verify — проверка
-    int n_iters = 5;
-    bool verify = false;
-    for (int i = 1; i < argc; ++i) {
-      std::string_view arg{argv[i]};
-      if (arg == "--verify"sv) {
-        verify = true;
-      } else {
-        int value = 0;
-        auto [ptr, ec] =
-            std::from_chars(arg.data(), arg.data() + arg.size(), value);
-        if (ec != std::errc{} || ptr != arg.data() + arg.size() || value < 1) {
-          if (rank == 0) {
-            std::cerr << "Некорректный аргумент: " << arg << "\n";
-          }
-          return EXIT_FAILURE;
-        }
-        n_iters = value;
-      }
+    // Разбор: первый числовой аргумент — iters, --verify — проверка
+    auto args = par_parse_args(argc, argv, rank);
+    if (!args) {
+      return EXIT_FAILURE;
     }
+    auto [N, iters, verify] = *args;
+    (void)N;
 
     int last_recv = -1;
-    ring_persistent(rank, size, n_iters, last_recv);
+    ring_persistent(rank, size, iters, last_recv);
 
     if (verify) {
       // Ожидаемое: на последней итерации сосед слева отправил
-      // (left * 1000 + (n_iters - 1))
+      // (left * 1000 + (iters - 1))
       int left = (rank - 1 + size) % size;
-      int expected = left * 1000 + (n_iters - 1);
+      int expected = left * 1000 + (iters - 1);
       if (last_recv != expected) {
         std::cerr << "rank " << rank << ": expected " << expected << ", got "
                   << last_recv << "\n";
         return EXIT_FAILURE;
       }
       if (rank == 0) {
-        std::cout << "OK (persistent ring, " << n_iters << " iters)\n";
+        std::cout << "OK (persistent ring, " << iters << " iters)\n";
       }
     } else {
       std::cout << "rank " << rank << " last received " << last_recv << "\n";

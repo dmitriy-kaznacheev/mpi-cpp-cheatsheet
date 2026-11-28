@@ -30,9 +30,9 @@ int main(int argc, char **argv) {
       return EXIT_FAILURE;
     }
 
-    // N не используется, но парсер общий
-    auto [N, verify] = *args;
+    auto [N, iters, verify] = *args;
     (void)N;
+    (void)iters;
 
     int recv_val = -1;
     ring_shift(rank, size, recv_val);

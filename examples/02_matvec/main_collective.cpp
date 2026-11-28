@@ -63,9 +63,12 @@ int main(int argc, char **argv) {
     MPI_Comm_size(MPI_COMM_WORLD, &size);
 
     auto args = par_parse_args(argc, argv, rank);
-    if (!args)
+    if (!args) {
       return EXIT_FAILURE;
-    auto [N, verify] = *args;
+    }
+
+    auto [N, iters, verify] = *args;
+    (void)iters;
 
     if (!check_size_limit(N, rank)) {
       return EXIT_FAILURE;

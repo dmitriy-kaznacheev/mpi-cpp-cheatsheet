@@ -10,7 +10,7 @@
 
     cmake -S . -B build
     cmake --build build -j
-    mpirun -np 4 ./build/bin/persistent 5 --verify
+    mpirun -np 4 ./build/bin/persistent --iters 5 --verify
 
 Первый аргумент — число итераций (по умолчанию 5).
 `--verify` проверяет последний принятый элемент.
@@ -34,6 +34,9 @@
   нужен `MPI_Request_free`.
 - Для одной итерации persistent дороже обычного `Isend`/`Irecv`:
   выгода появляется при `n_iters >> 1`.
+- CLI общий с другими примерами: `--iters N` — число итераций
+  (по умолчанию 5), `--verify` — проверка. Позиционное число
+  зарезервировано под размер задачи (`count`), как в `02_matvec`.
 
 ## См. также
 
